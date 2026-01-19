@@ -172,6 +172,16 @@
   border-radius: 4px;
 }
 
+/* Minimum height for events */
+.rbc-event {
+  min-height: 28px !important;
+}
+
+.rbc-event-content {
+  overflow: visible;
+  white-space: nowrap;
+}
+
 /* Mobile First Responsive */
 @media (max-width: 768px) {
   .rbc-toolbar {
