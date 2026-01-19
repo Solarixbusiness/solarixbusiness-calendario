@@ -2,7 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
-import { CalendarEvent } from '@/lib/types'
+import { CalendarEvent, AppointmentType } from '@/lib/types'
+
+const APPOINTMENT_TYPES: { value: AppointmentType; label: string }[] = [
+  { value: 'appuntamento', label: '📅 Appuntamento' },
+  { value: 'chiamata', label: '📞 Chiamata' },
+  { value: 'invio_documento', label: '📄 Invio documento' },
+]
+
+// Admin email - solo questo utente può eliminare
+const ADMIN_EMAIL = 'tiziano.ena@solarixbusiness.it'
 
 interface AppointmentModalProps {
   isOpen: boolean
@@ -13,12 +22,16 @@ interface AppointmentModalProps {
     start: Date
     end: Date
     color: string
+    address: string
+    appointmentType: AppointmentType
   }) => void
   onDelete?: () => void
   event: CalendarEvent | null
   initialSlot: { start: Date; end: Date } | null
   canEdit: boolean
+  canDelete: boolean
   userColor: string
+  userEmail: string
 }
 
 export default function AppointmentModal({
@@ -29,7 +42,9 @@ export default function AppointmentModal({
   event,
   initialSlot,
   canEdit,
+  canDelete,
   userColor,
+  userEmail,
 }: AppointmentModalProps) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -38,7 +53,11 @@ export default function AppointmentModal({
   const [endDate, setEndDate] = useState('')
   const [endTime, setEndTime] = useState('')
   const [color, setColor] = useState(userColor)
+  const [address, setAddress] = useState('')
+  const [appointmentType, setAppointmentType] = useState<AppointmentType>('appuntamento')
   const [errors, setErrors] = useState<Record<string, string>>({})
+  
+  const isAdmin = userEmail === ADMIN_EMAIL
 
   useEffect(() => {
     if (event) {
@@ -49,6 +68,8 @@ export default function AppointmentModal({
       setEndDate(format(event.end, 'yyyy-MM-dd'))
       setEndTime(format(event.end, 'HH:mm'))
       setColor(event.color || event.creatorColor)
+      setAddress(event.address || '')
+      setAppointmentType(event.appointmentType || 'appuntamento')
     } else if (initialSlot) {
       setTitle('')
       setDescription('')
@@ -57,6 +78,8 @@ export default function AppointmentModal({
       setEndDate(format(initialSlot.end, 'yyyy-MM-dd'))
       setEndTime(format(initialSlot.end, 'HH:mm'))
       setColor(userColor)
+      setAddress('')
+      setAppointmentType('appuntamento')
     }
     setErrors({})
   }, [event, initialSlot, userColor])
@@ -101,6 +124,8 @@ export default function AppointmentModal({
       start,
       end,
       color,
+      address: address.trim(),
+      appointmentType,
     })
   }
 
@@ -132,6 +157,24 @@ export default function AppointmentModal({
                 Questo appuntamento è stato creato da {event.creatorName}. Solo il creatore può modificarlo.
               </div>
             )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Tipo *
+              </label>
+              <select
+                value={appointmentType}
+                onChange={(e) => setAppointmentType(e.target.value as AppointmentType)}
+                disabled={!canEdit}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:bg-gray-100 disabled:cursor-not-allowed"
+              >
+                {APPOINTMENT_TYPES.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -216,7 +259,21 @@ export default function AppointmentModal({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Descrizione
+                Indirizzo
+              </label>
+              <input
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                disabled={!canEdit}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:bg-gray-100 disabled:cursor-not-allowed"
+                placeholder="Es: Via Roma 1, Milano"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Note
               </label>
               <textarea
                 value={description}
@@ -230,7 +287,7 @@ export default function AppointmentModal({
 
 
             <div className="flex justify-between pt-4">
-              {onDelete && canEdit ? (
+              {onDelete && canDelete && isAdmin ? (
                 <button
                   type="button"
                   onClick={onDelete}

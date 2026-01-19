@@ -5,6 +5,8 @@ export interface Profile {
   created_at: string
 }
 
+export type AppointmentType = 'appuntamento' | 'chiamata' | 'invio_documento'
+
 export interface Appointment {
   id: string
   title: string
@@ -15,6 +17,8 @@ export interface Appointment {
   created_by: string
   created_at: string
   updated_at: string
+  address: string | null
+  appointment_type: AppointmentType
   profiles?: Profile
 }
 
@@ -28,4 +32,6 @@ export interface CalendarEvent {
   createdBy: string
   creatorName: string
   creatorColor: string
+  address?: string
+  appointmentType?: AppointmentType
 }

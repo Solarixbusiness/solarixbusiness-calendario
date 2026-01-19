@@ -26,10 +26,11 @@ interface CalendarViewProps {
   userId: string
   userName: string
   userColor: string
+  userEmail: string
   profiles: Profile[]
 }
 
-export default function CalendarView({ userId, userColor }: CalendarViewProps) {
+export default function CalendarView({ userId, userColor, userEmail }: CalendarViewProps) {
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [, setIsMobile] = useState(false)
   const [view, setView] = useState<View>('day')
@@ -93,11 +94,13 @@ export default function CalendarView({ userId, userColor }: CalendarViewProps) {
           title: apt.title,
           start: new Date(apt.start_time),
           end: new Date(apt.end_time),
-          description: apt.description,
+          description: apt.description || undefined,
           color: apt.color || profile?.avatar_color || '#3B82F6',
           createdBy: apt.created_by,
           creatorName: profile?.full_name || 'Utente',
           creatorColor: profile?.avatar_color || '#3B82F6',
+          address: apt.address || undefined,
+          appointmentType: apt.appointment_type || 'appuntamento',
         }
       })
       setEvents(calendarEvents)
@@ -149,6 +152,8 @@ export default function CalendarView({ userId, userColor }: CalendarViewProps) {
     start: Date
     end: Date
     color: string
+    address: string
+    appointmentType: string
   }) => {
     if (selectedEvent) {
       // Update existing appointment
@@ -160,6 +165,8 @@ export default function CalendarView({ userId, userColor }: CalendarViewProps) {
           start_time: appointmentData.start.toISOString(),
           end_time: appointmentData.end.toISOString(),
           color: appointmentData.color,
+          address: appointmentData.address || null,
+          appointment_type: appointmentData.appointmentType,
           updated_at: new Date().toISOString(),
         })
         .eq('id', selectedEvent.id)
@@ -177,6 +184,8 @@ export default function CalendarView({ userId, userColor }: CalendarViewProps) {
         start_time: appointmentData.start.toISOString(),
         end_time: appointmentData.end.toISOString(),
         color: appointmentData.color,
+        address: appointmentData.address || null,
+        appointment_type: appointmentData.appointmentType,
         created_by: userId,
       }).select()
 
@@ -318,11 +327,13 @@ export default function CalendarView({ userId, userColor }: CalendarViewProps) {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onSave={handleSaveAppointment}
-        onDelete={selectedEvent && selectedEvent.createdBy === userId ? handleDeleteAppointment : undefined}
+        onDelete={selectedEvent ? handleDeleteAppointment : undefined}
         event={selectedEvent}
         initialSlot={selectedSlot}
         canEdit={!selectedEvent || selectedEvent.createdBy === userId}
+        canDelete={!!selectedEvent}
         userColor={userColor}
+        userEmail={userEmail}
       />
     </div>
   )

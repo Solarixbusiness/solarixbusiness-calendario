@@ -47,6 +47,7 @@ export default async function CalendarPage() {
             userId={user.id} 
             userName={userName}
             userColor={userColor}
+            userEmail={user.email || ''}
             profiles={profiles || []}
           />
         </main>
