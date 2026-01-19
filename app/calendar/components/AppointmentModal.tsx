@@ -84,6 +84,46 @@ export default function AppointmentModal({
     setErrors({})
   }, [event, initialSlot, userColor])
 
+  // Quando cambia data inizio, aggiorna data fine se necessario
+  const handleStartDateChange = (newStartDate: string) => {
+    setStartDate(newStartDate)
+    // Se data fine è prima di data inizio, aggiorna data fine
+    if (newStartDate > endDate) {
+      setEndDate(newStartDate)
+    }
+  }
+
+  // Quando cambia ora inizio, aggiorna ora fine automaticamente
+  const handleStartTimeChange = (newStartTime: string) => {
+    setStartTime(newStartTime)
+    // Imposta ora fine a 1 minuto dopo
+    const [hours, minutes] = newStartTime.split(':').map(Number)
+    let newEndMinutes = minutes + 1
+    let newEndHours = hours
+    if (newEndMinutes >= 60) {
+      newEndMinutes = 0
+      newEndHours = (hours + 1) % 24
+    }
+    const newEndTime = `${String(newEndHours).padStart(2, '0')}:${String(newEndMinutes).padStart(2, '0')}`
+    setEndTime(newEndTime)
+    // Se data fine è uguale a data inizio, mantienila
+    setEndDate(startDate)
+  }
+
+  // Quando cambia ora fine, controlla se deve passare al giorno dopo
+  const handleEndTimeChange = (newEndTime: string) => {
+    setEndTime(newEndTime)
+    // Se ora fine è <= ora inizio, passa al giorno dopo
+    if (newEndTime <= startTime && startDate === endDate) {
+      const nextDay = new Date(startDate)
+      nextDay.setDate(nextDay.getDate() + 1)
+      setEndDate(format(nextDay, 'yyyy-MM-dd'))
+    } else if (newEndTime > startTime && endDate > startDate) {
+      // Se ora fine è > ora inizio e siamo al giorno dopo, torna al giorno stesso
+      setEndDate(startDate)
+    }
+  }
+
   const validate = () => {
     const newErrors: Record<string, string> = {}
 
@@ -201,7 +241,7 @@ export default function AppointmentModal({
                 <input
                   type="date"
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  onChange={(e) => handleStartDateChange(e.target.value)}
                   disabled={!canEdit}
                   className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:bg-gray-100 disabled:cursor-not-allowed ${
                     errors.start ? 'border-red-300' : 'border-gray-300'
@@ -215,7 +255,7 @@ export default function AppointmentModal({
                 <input
                   type="time"
                   value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
+                  onChange={(e) => handleStartTimeChange(e.target.value)}
                   disabled={!canEdit}
                   className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:bg-gray-100 disabled:cursor-not-allowed ${
                     errors.start ? 'border-red-300' : 'border-gray-300'
@@ -233,6 +273,7 @@ export default function AppointmentModal({
                 <input
                   type="date"
                   value={endDate}
+                  min={startDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   disabled={!canEdit}
                   className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:bg-gray-100 disabled:cursor-not-allowed ${
@@ -247,7 +288,7 @@ export default function AppointmentModal({
                 <input
                   type="time"
                   value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
+                  onChange={(e) => handleEndTimeChange(e.target.value)}
                   disabled={!canEdit}
                   className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:bg-gray-100 disabled:cursor-not-allowed ${
                     errors.end ? 'border-red-300' : 'border-gray-300'

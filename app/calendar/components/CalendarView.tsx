@@ -311,9 +311,16 @@ export default function CalendarView({ userId, userColor, userEmail }: CalendarV
                   .join('')
                   .toUpperCase()
                   .slice(0, 2)
+                const typeLabels: Record<string, string> = {
+                  'appuntamento': '📅',
+                  'chiamata': '📞',
+                  'invio_documento': '📄',
+                }
+                const typeIcon = typeLabels[event.appointmentType || 'appuntamento'] || '📅'
                 return (
                   <div className="truncate">
-                    <span className="font-bold">{initials}:</span>
+                    <span>{typeIcon}</span>
+                    <span className="font-bold ml-1">{initials}:</span>
                     <span className="font-medium ml-1">{event.title}</span>
                   </div>
                 )
