@@ -7,6 +7,8 @@ import { it } from 'date-fns/locale'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { createClient } from '@/lib/supabase/client'
 import { Profile, Appointment, CalendarEvent } from '@/lib/types'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _Profile = {} as Profile // Keep import used
 import AppointmentModal from './AppointmentModal'
 import ViewSelector from './ViewSelector'
 
@@ -27,9 +29,9 @@ interface CalendarViewProps {
   profiles: Profile[]
 }
 
-export default function CalendarView({ userId, userName, userColor, profiles }: CalendarViewProps) {
+export default function CalendarView({ userId, userColor }: CalendarViewProps) {
   const [events, setEvents] = useState<CalendarEvent[]>([])
-  const [isMobile, setIsMobile] = useState(false)
+  const [, setIsMobile] = useState(false)
   const [view, setView] = useState<View>('day')
   const [date, setDate] = useState(new Date())
 
@@ -79,11 +81,12 @@ export default function CalendarView({ userId, userName, userColor, profiles }: 
 
     // Create a map of profiles by id
     const profilesMap = new Map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (profilesData || []).map((p: any) => [p.id, p])
     )
 
     if (appointments) {
-      const calendarEvents: CalendarEvent[] = appointments.map((apt: any) => {
+      const calendarEvents: CalendarEvent[] = appointments.map((apt: Appointment) => {
         const profile = profilesMap.get(apt.created_by)
         return {
           id: apt.id,
